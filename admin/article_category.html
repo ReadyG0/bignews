@@ -69,13 +69,13 @@
                         </div>
                         <div class="form-group">
                             <label for="message-text" class="control-label">描述:</label>
-                            <textarea class="form-control" id="message-text"></textarea>
+                            <input class="form-control" id="message-text">
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-primary">确认</button>
+                    <button type="button" class="btn btn-default btn-cancel" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary btn-confirm">确认</button>
                 </div>
             </div>
         </div>
@@ -91,8 +91,8 @@
             <td>{{ v.name }}</td>
             <td>{{ v.slug }}</td>
             <td class="text-center">
-                <a href="javascript:void(0);" data-toggle="modal" class=" btn btn-info btn-xs" data-toggle="modal" data-target="#myModal">编辑</a>
-                <a href="javascript:void(0);" class="btn btn-danger btn-xs">删除</a>
+                <a href="javascript:void(0);" data-id="{{ v.id }}" data-toggle="modal" class=" btn btn-info btn-xs btn-edit" data-toggle="modal" data-target="#myModal">编辑</a>
+                <a href="javascript:void(0);" data-id="{{ v.id }}" class="btn btn-danger btn-xs btn-delete">删除</a>
             </td>
         </tr>
         {{ /each }}
@@ -108,9 +108,108 @@
                 success: function (backData) {
                     console.log(backData);
                     // 模板渲染
-                    $(".category_table>tbody").html(template('my_category',backData));
+                    $(".category_table>tbody").html(template('my_category', backData));
                 }
             });
+
+            // 模态框出现后需要修改的
+            $('#myModal').on('show.bs.modal', function (e) {
+                console.log(e.relatedTarget.text);
+                if (e.relatedTarget.text == '编辑') {
+                    // console.log('1');
+                    $(".btn-confirm").text('编辑');
+                    // let id = $(".btn-edit").attr('data-id');
+                    // console.log(id);
+                    // $.ajax({
+                    //     url: bigNews.category_search,
+                    //     type: 'get',
+                    //     dataType: 'json',
+                    //     data: {
+                    //         id: id,
+                    //     },
+                    //     success: function (backData) {
+                    //         console.log(backData);
+                    //         if(backData.code == 200) {
+                    //             // console.log(backData.data[0].name);
+                    //             $("#recipient-name").val(backData.data[0].name);
+                    //             $("#message-text").val(backData.data[0].slug);
+                    //         }
+                    //     }
+                    // });
+                    // 取出当前编辑按钮所在的tr的数据 赋值给 模态框输入框
+                    $("#recipient-name").val($(e.relatedTarget).parent().prev().prev().text());
+                    $("#message-text").val($(e.relatedTarget).parent().prev().text());
+                    // 将编辑的id设置给模态框的确认按钮id
+                    $(".btn-confirm").attr('data-id',$(e.relatedTarget).attr('data-id'));
+                } else {
+                    $(".btn-confirm").text('新增');
+
+                }
+            });
+
+            // 模态框确认按钮的事件（根据文本内容的不同ajax也不同）
+            $(".btn-confirm").click(function () {
+                if ($(".btn-confirm").text() == '新增') {
+                    $.ajax({
+                        url: bigNews.category_add,
+                        type: 'post',
+                        dataType: 'json',
+                        data: {
+                            name: $("#recipient-name").val(),
+                            slug: $("#message-text").val(),
+                        },
+                        success: function (backData) {
+                            console.log(backData);
+                            if (backData.code == 201) {
+                                alert(backData.msg);
+                                window.location.reload();
+                            }
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        url:bigNews.category_edit,
+                        type:'post',
+                        dataType:'json',
+                        data:{
+                            id:$(".btn-confirm").attr('data-id'),
+                            name:$("#recipient-name").val(),
+                            slug:$("#message-text").val(),
+                        },
+                        success: function(backData){
+                            console.log(backData);
+                            if(backData.code == 200) {
+                                alert(backData.msg);
+                                window.location.reload();
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 模态框取消事件
+            $("body").on('click','.btn-cancel',function(){
+                $("#myModal form")[0].reset();
+            });
+
+            // 删除按钮事件
+            $("body").on('click','.btn-delete',function(){
+                $.ajax({
+                    url:bigNews.category_delete,
+                    type:'post',
+                    dataType:'json',
+                    data:{
+                        id:$(this).attr('data-id'),
+                    },
+                    success: function(backData){
+                        // console.log(backData);
+                        if(backData.code == 204) {
+                            alert(backData.msg);
+                            window.location.reload();
+                        }
+                    }
+                });
+            })
         })
     </script>
 
