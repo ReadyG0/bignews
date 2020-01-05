@@ -95,7 +95,7 @@
                 <td class="text-center">{{ v.date }}</td>
                 <td class="text-center">{{ v.state }}</td>
                 <td class="text-center">
-                    <a href="article_edit.html" data-id="{{ v.id }}" class="btn btn-default btn-xs">编辑</a>
+                    <a href="article_edit.html?id={{ v.id }}" class="btn btn-default btn-xs">编辑</a>
                     <a href="javascript:void(0);" data-id="{{ v.id }}" class="btn btn-danger btn-xs delete">删除</a>
                 </td>
             </tr>
@@ -144,16 +144,16 @@
                 $('#pagination-demo').twbsPagination({
                     totalPages: totalPages,
                     startPage: startPage,
-                    visiblePages:6,
+                    visiblePages: 6,
                     first: '首页',
                     prev: '上一页',
                     next: '下一页',
                     last: '尾页',
                     onPageClick: function (event, page) {
                         $('#page-content').text('Page ' + page);
-                        if(page != startPage) {
-                            toPage(page);
-                        }
+                        // if(page != startPage) {
+                        toPage(page);
+                        // }
                     }
                 });
             }
@@ -178,27 +178,27 @@
                         console.log(backData);
                         $(".mp20>tbody").html(template('art_list', backData));
 
-                        // if (flag) {
-                            reShowPage(backData.data.totalPage,currentPage);
-                        // }
+                        if (flag) {
+                            reShowPage(backData.data.totalPage, currentPage);
+                        }
                     }
                 });
             }
-        
+
             // 删除事件
-            $("body").on('click','.delete',function(){
+            $("body").on('click', '.delete', function () {
                 let id = $(this).attr('data-id');
                 console.log(id);
                 $.ajax({
-                    url:bigNews.article_delete,
-                    type:'post',
-                    dataType:'json',
-                    data:{
-                        id:id,
+                    url: bigNews.article_delete,
+                    type: 'post',
+                    dataType: 'json',
+                    data: {
+                        id: id,
                     },
-                    success: function(backData){
+                    success: function (backData) {
                         console.log(backData);
-                        if(backData.code == 204) {
+                        if (backData.code == 204) {
                             alert(backData.msg);
                             window.location.reload();
                         }
